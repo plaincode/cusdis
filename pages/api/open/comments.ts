@@ -7,6 +7,7 @@ import { apiHandler } from '../../../utils.server'
 import Cors from 'cors'
 import { ProjectService } from '../../../service/project.service'
 import { statService } from '../../../service/stat.service'
+import crypto from 'crypto'
 
 export default apiHandler()
   .use(
@@ -71,6 +72,7 @@ export default apiHandler()
         page: Number(query.page) || 1,
         select: {
           by_nickname: true,
+          by_email: true,
           moderator: {
             select: {
               displayName: true
@@ -82,8 +84,22 @@ export default apiHandler()
 
     queryCommentStat.end()
 
+    function addGravatar(list: any[]) {
+      return list.map(c => {
+        const hash = c.by_email
+          ? crypto.createHash('sha256').update(c.by_email.trim().toLowerCase()).digest('hex')
+          : null
+        const { by_email, ...rest } = c
+        return {
+          ...rest,
+          gravatar_hash: hash,
+          replies: c.replies?.data ? { ...c.replies, data: addGravatar(c.replies.data) } : c.replies,
+        }
+      })
+    }
+
     res.json({
-      data: comments,
+      data: { ...comments, data: addGravatar(comments.data) },
     })
   })
   .post(async (req, res) => {
