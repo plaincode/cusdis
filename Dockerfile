@@ -1,4 +1,4 @@
-FROM node:16-alpine3.15 as builder
+FROM node:18-alpine as builder
 
 ARG DB_TYPE=sqlite
 ENV DB_TYPE=$DB_TYPE
@@ -12,10 +12,10 @@ COPY package.json yarn.lock /app/
 WORKDIR /app
 
 RUN npm install -g pnpm
-RUN yarn install && npx browserslist@latest --update-db
+RUN yarn install
 RUN npm run build:without-migrate
 
-FROM node:16-alpine3.15 as runner
+FROM node:18-alpine as runner
 
 ENV NODE_ENV=production
 ARG DB_TYPE=sqlite
