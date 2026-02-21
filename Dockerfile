@@ -1,4 +1,4 @@
-FROM node:18-alpine as builder
+FROM node:16-alpine as builder
 
 ARG DB_TYPE=sqlite
 ENV DB_TYPE=$DB_TYPE
@@ -11,11 +11,10 @@ COPY package.json yarn.lock /app/
 
 WORKDIR /app
 
-RUN npm install -g pnpm
 RUN yarn install
 RUN npm run build:without-migrate
 
-FROM node:18-alpine as runner
+FROM node:16-alpine as runner
 
 ENV NODE_ENV=production
 ARG DB_TYPE=sqlite
